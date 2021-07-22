@@ -1,6 +1,6 @@
 {
   "name": "gatsby-cdn-search-plugin",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Gatsby cdn search plugin",
   "main": "dist/index.js",
   "browser": "dist/index.js",
