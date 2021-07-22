@@ -1,36 +1,35 @@
 {
-  "name": "search-example-site",
-  "version": "1.0.0",
-  "private": true,
-  "description": "search example site",
-  "author": "Nikita Vorobyev",
-  "keywords": [
-    "gatsby"
+  "name": "gatsby-cdn-search-plugin",
+  "version": "0.0.1",
+  "description": "Gatsby cdn search plugin",
+  "main": "dist/index.js",
+  "browser": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
   ],
   "scripts": {
-    "develop": "gatsby develop",
-    "start": "gatsby develop",
-    "build": "cd ./cdn-indice-plugin && npm run build && cd .. &&  gatsby build",
-    "serve": "gatsby serve",
-    "clean": "gatsby clean",
-    "convert": "node convert.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
+  "keywords": [
+    "gatsby",
+    "gatsby-plugin"
+  ],
+  "author": "voronsupermen@gmail.com",
+  "license": "0BSD",
   "dependencies": {
-    "better-sqlite3": "^7.4.1",
-    "csv-parser": "^3.0.0",
-    "gatsby": "^3.6.2",
-    "gatsby-plugin-image": "^1.7.0",
-    "gatsby-plugin-manifest": "^3.7.0",
-    "gatsby-plugin-offline": "^4.9.0",
-    "gatsby-plugin-sharp": "^3.7.0",
-    "gatsby-plugin-theme-ui": "^0.9.1",
-    "gatsby-source-filesystem": "^3.7.1",
-    "gatsby-source-sqlite": "^1.0.0",
-    "gatsby-transformer-json": "^3.7.1",
-    "gatsby-transformer-sharp": "^3.7.0",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "theme-ui": "^0.9.1",
-    "full-text-search-server-static-index": "https://gitlab.com/vora-bei/gatsby-full-text-search-server-static-index-plugin.git"
+    "cdn-static-database": "1.0.9"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.15",
+    "@types/node": "^14.14.6",
+    "jest": "^26.6.3",
+    "prettier": "^2.1.2",
+    "ts-jest": "^26.4.4",
+    "typescript": "^4.0.5",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
+    "eslint": "^7.30.0"
   }
 }
