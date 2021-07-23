@@ -1,5 +1,8 @@
-import { SimpleIndice, NgramIndice, RangeLinearIndice } from "cdn-static-database";
+import { RangeLinearIndice } from "cdn-static-database/dist/range.linear.indice";
 import { restoreSharedIndices } from "cdn-static-database/dist/utils.browser";
+import { SimpleIndice } from "cdn-static-database/dist/simple.indice";
+import { NgramIndice } from "cdn-static-database/dist/ngram.indice";
+
 import { Db } from "cdn-static-database/dist/db";
 import { Schema } from "cdn-static-database/dist/schema";
 

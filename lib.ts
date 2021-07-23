@@ -3,7 +3,7 @@ import path from 'path'
 import fs from "fs";
 import { join } from "path";
 import util from "util";
-import { Engine, getIndice, ISerializedIndice } from ".";
+import { Engine, getIndice, ISerializedIndice } from "./index";
 const mkdir = util.promisify(fs.mkdir);
 const rmdir = util.promisify(fs.rmdir);
 const exists = util.promisify(fs.exists);
