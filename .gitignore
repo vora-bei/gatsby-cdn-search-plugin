@@ -54,6 +54,13 @@ typings/
 
 # dotenv environment variable files
 .env*
+*.js
+*.jsx
+*.d.ts
+*.d.ts.map
+*.jsx.map
+*.js.map
+
 
 # gatsby files
 .cache/

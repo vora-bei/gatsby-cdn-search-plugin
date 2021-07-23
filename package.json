@@ -2,10 +2,11 @@
   "name": "gatsby-cdn-search-plugin",
   "version": "0.0.9",
   "description": "Gatsby cdn search plugin",
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "browser": "index.js",
+  "main": "index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
+  "files": ["*"],
   "scripts": {
     "build": "tsc"
   },
@@ -24,12 +25,13 @@
   "devDependencies": {
     "@types/jest": "^26.0.15",
     "@types/node": "^14.14.6",
+    "@types/react": "^17.0.14",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
+    "eslint": "^7.30.0",
     "jest": "^26.6.3",
     "prettier": "^2.1.2",
     "ts-jest": "^26.4.4",
-    "typescript": "^4.0.5",
-    "@typescript-eslint/eslint-plugin": "^4.28.3",
-    "@typescript-eslint/parser": "^4.28.3",
-    "eslint": "^7.30.0"
+    "typescript": "^4.0.5"
   }
 }
