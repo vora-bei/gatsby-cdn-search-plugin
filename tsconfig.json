@@ -8,7 +8,7 @@
     "module": "commonjs",                           /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */
      "lib": ["ESNext","DOM"],                                   /* Specify library files to be included in the compilation. */
      "allowJs": true,   
-     "resolveJsonModule": true,
+    // "resolveJsonModule": true,
      "declaration": true /* Generates corresponding '.d.ts' file. */,
      "declarationMap": true /* Generates a sourcemap for each corresponding '.d.ts' file. */,
      "sourceMap": true /* Generates corresponding '.map' file. */,
@@ -51,9 +51,9 @@
 
     /* Module Resolution Options */
     // "moduleResolution": "node",                  /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
-     "baseUrl": ".",                             /* Base directory to resolve non-absolute module names. */
+     "baseUrl": "./src",                             /* Base directory to resolve non-absolute module names. */
     // "paths": {},                                 /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */
-     "rootDirs": ["."],                              /* List of root folders whose combined content represents the structure of the project at runtime. */
+     "rootDirs": ["./src"],                              /* List of root folders whose combined content represents the structure of the project at runtime. */
     // "typeRoots": [],                             /* List of folders to include type definitions from. */
     // "types": [],                                 /* Type declaration files to be included in compilation. */
     // "allowSyntheticDefaultImports": true,        /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */
@@ -76,7 +76,6 @@
     "forceConsistentCasingInFileNames": true,        /* Disallow inconsistently-cased references to the same file. */
     "outDir": "./dist",
   },
-  "include": [
-    "."
-  ]
+  "include": ["src", "tests" ]
+
 }
