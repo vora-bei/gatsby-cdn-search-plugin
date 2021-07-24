@@ -1,4 +1,14 @@
 # Gatsby cdn search plugin
+Mongo query compatible search plugin for gatsby. 
+Create indices assets in the build directory.
+Restore and load indices on-demand from CDN.
+Useful for big indices.
+I used my own search engine for search.
+The plugin supports n-gram, mongo-like operators, regexp starts with "^abcd". 
+Search parsed search expression and finds suit indices.
+The next step is to load the table of contents indices.
+The third step is to load chunks of indices and intersect results.
+The last step test result by Mingo library.
 ### Plugins config
 ```javascript
     plugins = [
