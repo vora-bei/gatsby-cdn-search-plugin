@@ -69,17 +69,17 @@ The last step test result by Mingo library.
         result = await db.find({ year: { $gte: 2014 } }, undefined, 0, offset);
       }
 ```
-   #Live demo 
+### Live demo 
     
     Kaggle dataset "Used Car Auction Prices" 
     
     500 000 row 
 
-    https://gatsby-5o5.pages.dev/cars/ - live demo
+    [live demo](https://gatsby-5o5.pages.dev/cars/)
 
 
-    https://github.com/vora-bei/gatsby-cdn-search-demo-site - source code on github
+    [source code on github](https://github.com/vora-bei/gatsby-cdn-search-demo-site)
   
     
-    https://www.kaggle.com/tunguz/used-car-auction-prices - source of dataa
+    [source of data](https://www.kaggle.com/tunguz/used-car-auction-prices)
 
