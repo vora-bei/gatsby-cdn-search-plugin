@@ -46,7 +46,9 @@
 ### Usage
 
 ```javascript
-      setLoading(true);
+
+      import { restoreDb } from 'gatsby-cdn-search-plugin'
+
       const db = await restoreDb('cars');
       let result;
       if (search.length >= 4) {
@@ -56,7 +58,18 @@
       } else {
         result = await db.find({ year: { $gte: 2014 } }, undefined, 0, offset);
       }
-      setList(result);
-      setLoading(false);
 ```
+   #Live demo 
+    
+    Kaggle dataset "Used Car Auction Prices" 
+    
+    500 000 row 
+
+    https://gatsby-5o5.pages.dev/cars/ - live demo
+
+
+    https://github.com/vora-bei/gatsby-cdn-search-demo-site - source code on github
+  
+    
+    https://www.kaggle.com/tunguz/used-car-auction-prices - source of dataa
 
