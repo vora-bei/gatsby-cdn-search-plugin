@@ -71,15 +71,13 @@ The last step test result by Mingo library.
 ```
 ### Live demo 
     
-    Kaggle dataset "Used Car Auction Prices" 
-    
-    500 000 row 
+Kaggle dataset "Used Car Auction Prices" 500 000 row 
 
-    [live demo](https://gatsby-5o5.pages.dev/cars/)
+[live demo](https://gatsby-5o5.pages.dev/cars/)
 
 
-    [source code on github](https://github.com/vora-bei/gatsby-cdn-search-demo-site)
+[source code on github](https://github.com/vora-bei/gatsby-cdn-search-demo-site)
   
     
-    [source of data](https://www.kaggle.com/tunguz/used-car-auction-prices)
+[source of data](https://www.kaggle.com/tunguz/used-car-auction-prices)
 
