@@ -53,7 +53,7 @@ The last step test result by Mingo library.
     ]
 ```
 
-### Usage
+### Usage find api
 
 ```javascript
 
@@ -68,6 +68,53 @@ The last step test result by Mingo library.
       } else {
         result = await db.find({ year: { $gte: 2014 } }, undefined, 0, offset);
       }
+```
+
+### Usage cursor api
+
+```javascript
+
+      import { restoreDb } from 'gatsby-cdn-search-plugin'
+
+      let cursor;
+      const searchFetch = async (search, skip = 0, limit = 30) => {
+        const db = await restoreDb('cars');
+        if(cursor){
+          cursor.finish();
+        }
+        if (search.length >= 4) {
+          cursor =  db.cursor({ $ngram: search, year: { $gte: 2014 } }, undefined, skip, limit);
+        } else if (!!search.length) {
+          cursor =  db.cursor({
+            $or: [
+              { model: { $regex: new RegExp(`^${search}`, 'i'), }, },
+              { make: { $regex: new RegExp(`^${search}`, 'i'), }, }
+            ],
+          }, undefined, skip, limit);
+        } else {
+          cursor = db.cursor({ year: { $gte: 2014 } }, undefined, skip, limit);
+        }
+        return await cursor.next();
+      }
+```
+
+```jsx
+      <input onChange={(e)=>(async ()=>{ 
+        let list = await searchFetch(e.target.value)}
+          setList(list)
+        })()}/>
+
+      <button onCLick={
+        ()=>{
+          (async ()=>{ 
+          if(cursor&& cursor.hasNext()){
+           let list = await cursor.next()
+            setList([...prevList,...list])
+          }
+          })()
+        }
+      }>Load more</button>
+
 ```
 ### Live demo 
     
