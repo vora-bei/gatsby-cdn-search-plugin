@@ -2,6 +2,8 @@ import { RangeLinearIndice } from "cdn-static-database/dist/range.linear.indice"
 import { restoreSharedIndices } from "cdn-static-database/dist/utils.browser";
 import { SimpleIndice } from "cdn-static-database/dist/simple.indice";
 import { NgramIndice } from "cdn-static-database/dist/ngram.indice";
+import { TextLexIndice } from "cdn-static-database/dist/text.lex.indice";
+
 
 import { Db } from "cdn-static-database/dist/db";
 import { Schema } from "cdn-static-database/dist/schema";
@@ -18,7 +20,8 @@ export const restore = async (id: string, dbId: string) => {
 }
 export enum Engine {
     "n-gram" = "n-gram",
-    "simple" = "simple"
+    "simple" = "simple",
+    "text-lex" = "text-lex"
 }
 export interface ISerializedIndice extends Record<string, unknown>
  { id: string, columns?: string[], column?: string, type?: Engine };
@@ -27,6 +30,9 @@ export const getIndice = (indice: Partial<ISerializedIndice>) => {
     const { type = "simple",column, columns, ...options } = indice;
     if (type === "n-gram") {
         return new NgramIndice(options);
+    }
+    if (type === "text-lex") {
+        return new TextLexIndice(options);
     }
     if (type === "simple") {
         return new SimpleIndice(options);
@@ -40,6 +46,9 @@ export const getLazyIndice = (indice: Partial<ISerializedIndice>) => {
     }
     if (type === "simple") {
         return SimpleIndice.deserialize;
+    }
+    if (type === "text-lex") {
+        return TextLexIndice.deserialize;
     }
     throw new Error(`Engine ${type} not found`)
 }

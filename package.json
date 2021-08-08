@@ -1,12 +1,14 @@
 {
   "name": "gatsby-cdn-search-plugin",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "Gatsby cdn search plugin",
   "browser": "index.js",
   "main": "index.js",
   "module": "index.js",
   "types": "index.d.ts",
-  "files": ["*"],
+  "files": [
+    "*"
+  ],
   "scripts": {
     "build": "tsc"
   },
@@ -17,7 +19,7 @@
   "author": "voronsupermen@gmail.com",
   "license": "0BSD",
   "dependencies": {
-    "cdn-static-database": "1.0.13"
+    "cdn-static-database": "1.1.1"
   },
   "peerDependencies": {
     "react": "^16.8.0  || ^17.0.0"
