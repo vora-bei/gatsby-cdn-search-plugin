@@ -3,6 +3,7 @@ import { restoreSharedIndices } from "cdn-static-database/dist/utils.browser";
 import { SimpleIndice } from "cdn-static-database/dist/simple.indice";
 import { NgramIndice } from "cdn-static-database/dist/ngram.indice";
 import { TextLexIndice } from "cdn-static-database/dist/text.lex.indice";
+import { useEffect, useState } from "react";
 
 
 import { Db } from "cdn-static-database/dist/db";
@@ -94,4 +95,38 @@ export const restoreDb = async (id: string) => {
                         ({ indice: indiceInstancesMap.get(indice.id)!, path: getIndicePath(indice) })
                 )
         ));
+}
+
+export const useCdnCursor = <T extends never>(dbId: string, query: {[name: string]: never}, sort: {[name: string]: never}, skip = 0, limit = 30): {
+    next: () => Promise<T[]>;
+    hasNext: () => false;
+    finish: () => void;
+} => {
+    let $cursor;
+    const [cursor, setCursor] = useState({
+        next: async () => { 
+            const c = await $cursor;
+            return await c.next();
+        },
+        hasNext: () => { 
+           return false;
+        },
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        finish: () => { }
+    });
+    useEffect(() => {
+        let c;
+        $cursor = (async () => {
+            const db = await restoreDb(dbId);
+            c = db.cursor(query, sort, skip, limit);
+            setCursor(c);
+            return c;
+        })();
+        return () => {
+            if(c) {
+                c.finish();
+            }
+        }
+    }, [query, sort, skip, limit, dbId]);
+    return cursor;
 }
