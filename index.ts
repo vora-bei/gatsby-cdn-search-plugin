@@ -97,7 +97,7 @@ export const restoreDb = async (id: string) => {
         ));
 }
 
-export const useCdnCursor = <T extends never>(dbId: string, query: {[name: string]: never}, sort: {[name: string]: never}, skip = 0, limit = 30): {
+export const useCdnCursorQuery = <T extends never>(dbId: string, query: {[name: string]: never}, sort: {[name: string]: never}, skip = 0, limit = 30): {
     next: () => Promise<T[]>;
     hasNext: () => false;
     finish: () => void;

@@ -98,6 +98,53 @@ The last step test result by Mingo library.
       }
 ```
 
+### Usage React hook 
+```javascript
+import { useCdnCursorQuery } from 'gatsby-cdn-search-plugin'
+const makeQuery = (search) => {
+  if (search.length >= 4) {
+    return { $ngram: search, year: { $lte: 2014 } };
+  } else if (!!search.length) {
+    return {
+      $or: [
+        { model: { $regex: new RegExp(`^${search}`, 'i'), }, },
+        { make: { $regex: new RegExp(`^${search}`, 'i'), }, }
+      ],
+    };
+  } else {
+    return { year: { $lte: 2014 } };
+  }
+}
+const [state, dispatch] = useReducer(reducer, initialState);
+
+const query = useMemo(() => makeQuery(state.search), [state.search]);
+
+const cursor = useCdnCursorQuery('cars', query, undefined, 0, 30);
+
+  useEffect(() => {
+    (async () => {
+        let list = await cursor.next();
+        dispatch({ type: 'load', list });
+    })();
+  }, [state.search, cursor])
+
+  useEffect(() => {
+    (async () => {
+      if (cursor.hasNext()) {
+        let list = await cursor.next();
+        dispatch({ type: 'loadMore', list })
+      }
+    })()
+  }, [state.page]);
+
+  const onKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      dispatch({ type: 'enter' });
+    }
+  }
+
+```
+
 ```jsx
       <input onChange={(e)=>(async ()=>{ 
         let list = await searchFetch(e.target.value)}
