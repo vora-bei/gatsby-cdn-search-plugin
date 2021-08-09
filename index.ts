@@ -3,7 +3,7 @@ import { restoreSharedIndices } from "cdn-static-database/dist/utils.browser";
 import { SimpleIndice } from "cdn-static-database/dist/simple.indice";
 import { NgramIndice } from "cdn-static-database/dist/ngram.indice";
 import { TextLexIndice } from "cdn-static-database/dist/text.lex.indice";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 
 import { Db } from "cdn-static-database/dist/db";
@@ -24,11 +24,10 @@ export enum Engine {
     "simple" = "simple",
     "text-lex" = "text-lex"
 }
-export interface ISerializedIndice extends Record<string, unknown>
- { id: string, columns?: string[], column?: string, type?: Engine };
+export interface ISerializedIndice extends Record<string, unknown> { id: string, columns?: string[], column?: string, type?: Engine };
 
 export const getIndice = (indice: Partial<ISerializedIndice>) => {
-    const { type = "simple",column, columns, ...options } = indice;
+    const { type = "simple", column, columns, ...options } = indice;
     if (type === "n-gram") {
         return new NgramIndice(options);
     }
@@ -97,36 +96,44 @@ export const restoreDb = async (id: string) => {
         ));
 }
 
-export const useCdnCursorQuery = <T extends never>(dbId: string, query: {[name: string]: never}, sort: {[name: string]: never}, skip = 0, limit = 30): {
+export const useCdnCursorQuery = <T extends never>(dbId: string, query: { [name: string]: never }, sort: { [name: string]: never }, skip = 0, limit = 30): {
     next: () => Promise<T[]>;
-    hasNext: () => false;
-    finish: () => void;
+    hasNext: () => Promise<boolean>;
+    finish: () => Promise<void>;
 } => {
-    let $cursor;
-    const [cursor, setCursor] = useState({
-        next: async () => { 
-            const c = await $cursor;
-            return await c.next();
-        },
-        hasNext: () => { 
-           return false;
-        },
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        finish: () => { }
-    });
+    const $db = useMemo(() => (async () => await restoreDb(dbId))(), [dbId]);
+    const cursorCreator = ($cursor) => ({
+      next: async () => {
+        const c = await $cursor;
+        return await c.next();
+      },
+      hasNext: async () => {
+        const c = await $cursor;
+        return await c.hasNext();
+      },
+      finish: async () => {
+        const c = await $cursor;
+        c.finish();
+      }
+    })
+    const cursor = useMemo(() => cursorCreator((async () => {
+      const db = await $db;
+      return  db.cursor(query, sort, skip, limit);
+    })()), [query, sort, skip, limit, dbId]);
+  
     useEffect(() => {
-        let c;
-        $cursor = (async () => {
-            const db = await restoreDb(dbId);
-            c = db.cursor(query, sort, skip, limit);
-            setCursor(c);
-            return c;
-        })();
-        return () => {
-            if(c) {
-                c.finish();
+      return () => {
+        (async ()=>{
+          if (cursor) {
+            try {
+            await cursor.finish();
+            } catch (e) {
+              console.error(e);
             }
-        }
+          }
+        })()
+      }
     }, [query, sort, skip, limit, dbId]);
+  
     return cursor;
-}
+  }

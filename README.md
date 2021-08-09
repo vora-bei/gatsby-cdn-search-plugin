@@ -130,7 +130,7 @@ const cursor = useCdnCursorQuery('cars', query, undefined, 0, 30);
 
   useEffect(() => {
     (async () => {
-      if (cursor.hasNext()) {
+      if (await cursor.hasNext()) {
         let list = await cursor.next();
         dispatch({ type: 'loadMore', list })
       }
