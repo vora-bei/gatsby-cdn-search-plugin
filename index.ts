@@ -4,10 +4,10 @@ import {
     SimpleIndice,
     RangeLinearIndice,
     restoreSharedIndicesBrowser,
-    Db
+    Db,
+    Schema
 } from "cdn-static-database";
 import { useEffect, useMemo } from "react";
-import { Schema } from "cdn-static-database/dist/schema";
 
 const baseUrl = '/cdn-indice/';
 export {log} from "cdn-static-database";
