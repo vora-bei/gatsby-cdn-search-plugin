@@ -1,18 +1,18 @@
-import { RangeLinearIndice } from "cdn-static-database/dist/range.linear.indice";
-import { restoreSharedIndices } from "cdn-static-database/dist/utils.browser";
-import { SimpleIndice } from "cdn-static-database/dist/simple.indice";
-import { NgramIndice } from "cdn-static-database/dist/ngram.indice";
-import { TextLexIndice } from "cdn-static-database/dist/text.lex.indice";
+import {
+    TextLexIndice,
+    NgramIndice,
+    SimpleIndice,
+    RangeLinearIndice,
+    restoreSharedIndicesBrowser,
+    Db
+} from "cdn-static-database";
 import { useEffect, useMemo } from "react";
-
-
-import { Db } from "cdn-static-database/dist/db";
 import { Schema } from "cdn-static-database/dist/schema";
 
 const baseUrl = '/cdn-indice/';
 
 export const restore = async (id: string, dbId: string) => {
-    return restoreSharedIndices<any, any>({
+    return restoreSharedIndicesBrowser<any, any>({
         id,
         baseUrl: `/cdn-indice/${dbId}`,
         deserializeShared: RangeLinearIndice.lazy,
@@ -69,13 +69,13 @@ export const restoreDb = async (id: string) => {
     });
     const res: { indices: ISerializedIndice[], idAttr: string } = await response.json();
     const indiceInstances = await Promise.all([
-        restoreSharedIndices<any, any>({
+        restoreSharedIndicesBrowser<any, any>({
             id: `data.${id}`,
             baseUrl: `/cdn-indice/${id}`,
             deserializeShared: RangeLinearIndice.lazy,
             deserialize: SimpleIndice.deserialize
         }),
-        ...res.indices.map((indice) => restoreSharedIndices<any, any>({
+        ...res.indices.map((indice) => restoreSharedIndicesBrowser<any, any>({
             id: indice.id,
             baseUrl: `/cdn-indice/${id}`,
             deserializeShared: RangeLinearIndice.lazy,
@@ -117,7 +117,7 @@ export const useCdnCursorQuery = <T extends never>(dbId: string, query: { [name:
       }
     })
     const cursor = useMemo(() => cursorCreator((async () => {
-      const db = await $db;
+      const db: Db = await $db;
       return  db.cursor(query, sort, skip, limit);
     })()), [query, sort, skip, limit, dbId]);
   
