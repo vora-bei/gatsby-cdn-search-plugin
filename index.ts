@@ -10,7 +10,7 @@ import { useEffect, useMemo } from "react";
 import { Schema } from "cdn-static-database/dist/schema";
 
 const baseUrl = '/cdn-indice/';
-
+export {log} from "cdn-static-database";
 export const restore = async (id: string, dbId: string) => {
     return restoreSharedIndicesBrowser<any, any>({
         id,
