@@ -8,6 +8,7 @@ import {
     Schema
 } from "cdn-static-database";
 import { useEffect, useMemo } from "react";
+import {ISharedIndice} from "cdn-static-database/types/@types/indice";
 
 const baseUrl = '/cdn-indice/';
 export {log} from "cdn-static-database";
@@ -82,7 +83,7 @@ export const restoreDb = async (id: string) => {
             deserialize: getLazyIndice(indice)
         }))
     ]);
-    const primary = indiceInstances.shift()
+    const primary: ISharedIndice<any, any> = indiceInstances.shift()!
     const indiceInstancesMap = new Map(indiceInstances.map((indice) => ([indice.id, indice])));
     return new Db(
         new Schema(
