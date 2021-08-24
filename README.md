@@ -16,16 +16,14 @@ The last step test result by Mingo library.
     {
       resolve: require.resolve("./cdn-indice-plugin"),
       options: {
-        id: 'cars', // Id database collection
-        chunkSize: 6000, // Indices chunk size. This affects the number of indices files. 
-        dataChunkSize: 60, // Data chunk size. This affects the number of data files.
-        indices: [ // Secondary indices. Add column available to search. 
+        id: 'cars',
+        chunkSize: 6000,
+        dataChunkSize: 60,
+        indices: [  
           {
               id: 'model',
               column: 'model',
-              type: 'simple', // Default value simple indices by one column only.
-                              // You can search by this column with regular Mongo predicate
-                              // lt, gt, eq, ... etc. Also support regexp by "start with regexp"
+              type: 'simple', 
           },
           { id: 'make', column: 'make' },
           { id: 'year', column: 'year' },
@@ -33,33 +31,26 @@ The last step test result by Mingo library.
           { 
               id: 'id-state',
               column: 'state',
-              algoritm: 'english', // 'russian','italian' e.t.c   words -> word 
-              type: 'text-lex' // Indices using "The Porter Stemming" Algorithm.
-                               // You can search by this column with specific not Mongo predicate.
-                               //  {$id-state:  "search"}
+              algoritm: 'english',
+              type: 'text-lex' 
           },
           { 
               id: 'ngram',
-              type: "n-gram",// Indices using the N-Gram algorithm for search with typos.
-                            // Alse support "The Porter Stemming Algorithm" for zipping indices.
-                            // You can search by this column with specific not Mongo predicate.
-                        //  {$ngram:  "search"}
-              actuationLimit: 1, // minimum match n-gram 
-              actuationLimitAuto: false, //  If option equal true.
-                                          // Minimum match n-gram calculate auto by size of search word.
-              gramLen: 3, // n-gram = 3 [color] -> [col, olo, lor]
-              toLowcase: true, // case sensitive
-              algoritm: 'english', // Default null. "The Porter Stemming Algorithm"
-              stopWords: ["and"], // The words exclude for search
-              columns: ['model', 'make', 'color'] // indexing columns 
+              type: "n-gram",
+              actuationLimit: 1,
+              actuationLimitAuto: false, 
+              gramLen: 3, 
+              toLowcase: true, 
+              algoritm: 'english',
+              stopWords: ["and"],
+              columns: ['model', 'make', 'color'] 
           }
         ],
-        idAttr: 'id', // Primary id.  
-        normalizer: ({ data }) => { // transform result of graphql query to data
+        idAttr: 'id',
+        normalizer: ({ data }) => { 
           return data.recentCars
             .map(( {id, ...node} ) => ({ id: id.replace('Car__',''), ...node }));
         },
-          // graphql query for fetching data
         graphQL: `query MyQuery { 
           recentCars(cursor: 0, limit: 500000){
               id
@@ -94,7 +85,7 @@ The last step test result by Mingo library.
 ### NgramIndicesOption
 | Options name       | Type     | Required | Default value | Description                                                                                                                                                                                                          |
 |--------------------|----------|----------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| type               | "n-gram" | True     | False         | Indices using the N-Gram algorithm for search with typos.  Also, support "The Porter Stemming Algorithm" for zipping indices.  You can search by this column with specific not Mongo predicate.  {$ngram:  "search"} |
+| type               | "n-gram" | True     | simple        | Indices using the N-Gram algorithm for search with typos.  Also, support "The Porter Stemming Algorithm" for zipping indices.  You can search by this column with specific not Mongo predicate.  {$ngram:  "search"} |
 | id                 | String   | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$ngram:  "search"}                                                                                                       |
 | actuationLimit     | Number   | True     | None          | Minimum match n-gram in search.  [color] -> [col, olo, lor]                                                                                                                                                          |
 | actuationLimitAuto | Boolean  | False    | False         | If option equal true option actuationLimit doesn't work.  Actuation limit n-gram calculates auto by the size of the search word.                                                                                     |
@@ -103,6 +94,22 @@ The last step test result by Mingo library.
 | algoritm           | String   | False    | None          |  Preprocess indices with "The Porter Stemming Algorithm".  Available values 'english', 'russian', ...                                                                                                                |
 | columns            | String[] | True     | None          | Indexing columns                                                                                                                                                                                                     |
 | stopWords          | String[] | False    | None          | The words exclude for search                                                                                                                                                                                         |
+
+### SimpleIndicesOption
+| Options name | Type       | Required | Default value | Description                                                                                                           |
+|--------------|------------|----------|---------------|-----------------------------------------------------------------------------------------------------------------------|
+| type         | "text-lex" | True     | simple        | The Porter Stemming Algorithm.    You can search by this column with specific not Mongo predicate.  {$lex:  "search"} |
+| id           | String     | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$lex:  "search"}          |
+| algoritm     | String     | False    | None          |  Preprocess indices with "The Porter Stemming Algorithm".  Available values 'english', 'russian', ...                 |
+| column       | String     | True     | None          | Indexing column                                                                                                       |
+
+### TextLexIndicesOption
+| Options name | Type     | Required | Default value | Description                                                                                                                                                                    |
+|--------------|----------|----------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| type         | "simple" | True     | "simple"      | Default value simple indices by one column only. You can search by this column with regular Mongo predicate  lt, gt, eq, ... etc. Also, support regexp by "start with regexp"  |
+| id           | String   | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$lex:  "search"}                                                                   |
+| column       | String   | True     | None          | Indexing column                                                                                                                                                                |
+
 
 ### Usage React hook
 ```javascript
