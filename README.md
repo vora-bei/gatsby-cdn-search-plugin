@@ -1,14 +1,30 @@
 # Gatsby cdn search plugin
-Mongo query compatible search plugin for gatsby. 
-Create indices assets in the build directory.
-Restore and load indices on-demand from CDN.
-Useful for big indices.
-I used my own search engine for search.
-The plugin supports n-gram, mongo-like operators, regexp starts with "^abcd". 
-Search parsed search expression and finds suit indices.
-The next step is to load the table of contents indices.
-The third step is to load chunks of indices and intersect results.
-The last step test result by Mingo library.
+> This plugin is in _beta_ and still in work
+> 
+> Give us any feedback, open issues for any questions or ideas
+
+Mongo query compatible search plugin for gatsby.
+It is a no cost way to add search to your site.
+Key technology is http2 protocol, CDN, mongo-like query and N-GRAM search.
+The plugin supports mongo-like query syntax with custom n-gram search.
+
+Idea of this plugin is simple.
+- calculated indices in build phase of gatsby apps. (n-gram, text-lex, simple)
+- split the indices by chunk
+- create range diapason indices as "table of contents" the chunk
+- save all chunk and "table of contents" on CDN as assets
+- in runtime plugin restore indices and  efficiently on-demand loaded chunk over http2 protocol
+- http2 multiplexing multiple requests over a single TCP connection.
+
+The plugin has native support React via Hook "useCdnCursorQuery".
+Also, you can trace your request with log-level.
+```javascript
+import { useCdnCursorQuery, log } from 'gatsby-cdn-search-plugin'
+log.enableAll(); // full logging 
+```
+
+
+
 ### Plugins config
 ```javascript
     plugins = [
@@ -133,7 +149,7 @@ const [state, dispatch] = useReducer(reducer, initialState);
 
 const query = useMemo(() => makeQuery(state.search), [state.search]);
 
-const cursor = useCdnCursorQuery('cars', query, undefined, 0, 30); // hook return cursor of data
+const cursor = useCdnCursorQuery('cars', query, {year: 1}, 0, 30); // hook return cursor of data
 
   useEffect(() => {
     (async () => {
@@ -154,7 +170,9 @@ const cursor = useCdnCursorQuery('cars', query, undefined, 0, 30); // hook retur
 ```
 
 
-### Usage find api
+
+
+### Usage find api exactly
 
 ```javascript
 
@@ -171,7 +189,7 @@ const cursor = useCdnCursorQuery('cars', query, undefined, 0, 30); // hook retur
       }
 ```
 
-### Usage cursor api
+### Usage cursor api exactly
 
 ```javascript
 
