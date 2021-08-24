@@ -27,7 +27,7 @@ export interface IOptions {
 const packageName = 'gatsby-cdn-search-plugin';
 
 export const buildIndex = async (graphql: any, options: IOptions) => {
-    const { graphQL, normalizer, idAttr, indices, chunkSize,dataChunkSize = 25, id } = options;
+    const { graphQL, normalizer, idAttr, indices, chunkSize = 500, dataChunkSize = 25, id } = options;
     // @todo check args // some libs
     const results = await graphql(graphQL);
     if (results.errors) {

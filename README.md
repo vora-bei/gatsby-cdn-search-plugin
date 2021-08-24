@@ -59,7 +59,7 @@ The last step test result by Mingo library.
           return data.recentCars
             .map(( {id, ...node} ) => ({ id: id.replace('Car__',''), ...node }));
         },
-          // graphql query for featching data
+          // graphql query for fetching data
         graphQL: `query MyQuery { 
           recentCars(cursor: 0, limit: 500000){
               id
@@ -80,6 +80,30 @@ The last step test result by Mingo library.
     }
     ]
 ```
+### Plugin options
+| Options name  | Type                                                                      | Required | Default value | Description                                                                                                                        |
+|---------------|---------------------------------------------------------------------------|----------|---------------|------------------------------------------------------------------------------------------------------------------------------------|
+| id            | String                                                                    | True     | None          | Unique id database collection. The first parameter in React Hook useCdnCursorQuery.                                                |
+| chunkSize     | Number                                                                    | False    | 500           | Indices chunk size. This affects the number of indices files. You should select this parameters depends of size of your collection |
+| dataChunkSize | Number                                                                    | False    | 25            | Data chunk size. This affects the number of data files.                                                                            |
+| idAttr        | String                                                                    | True     | None          | Primary id attribute name.                                                                                                         |
+| normalizer    | Function({data: any}): Row[]                                              | True     | None          | It is callback for handle data from graphQl                                                                                        |
+| graphQL       | graphQL string                                                            | True     | None          | Graphql query for fetching data                                                                                                    |
+| indices       | Array<Union<NgramIndicesOption ,TextLexIndicesOption ,SimpleIndicesOption>> | True     | None          | Secondary indices. Add column available to search.                                                                                 |
+
+### NgramIndicesOption
+| Options name       | Type     | Required | Default value | Description                                                                                                                                                                                                          |
+|--------------------|----------|----------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| type               | "n-gram" | True     | False         | Indices using the N-Gram algorithm for search with typos.  Also, support "The Porter Stemming Algorithm" for zipping indices.  You can search by this column with specific not Mongo predicate.  {$ngram:  "search"} |
+| id                 | String   | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$ngram:  "search"}                                                                                                       |
+| actuationLimit     | Number   | True     | None          | Minimum match n-gram in search.  [color] -> [col, olo, lor]                                                                                                                                                          |
+| actuationLimitAuto | Boolean  | False    | False         | If option equal true option actuationLimit doesn't work.  Actuation limit n-gram calculates auto by the size of the search word.                                                                                     |
+| gramLen: 3         | Number   | False    | 3             | Size of. Example if n-gram equal 3 "color" was split to "col", "olo", "lor"                                                                                                                                          |
+| toLowcase          | Boolean  | False    | False         | Case sensitive search                                                                                                                                                                                                |
+| algoritm           | String   | False    | None          |  Preprocess indices with "The Porter Stemming Algorithm".  Available values 'english', 'russian', ...                                                                                                                |
+| columns            | String[] | True     | None          | Indexing columns                                                                                                                                                                                                     |
+| stopWords          | String[] | False    | None          | The words exclude for search                                                                                                                                                                                         |
+
 ### Usage React hook
 ```javascript
 import { useCdnCursorQuery, log } from 'gatsby-cdn-search-plugin'
