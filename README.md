@@ -27,7 +27,17 @@ import { useCdnCursorQuery, log } from 'gatsby-cdn-search-plugin'
 log.enableAll(); // full logging 
 ```
 
+### Live demo
 
+Kaggle dataset "Used Car Auction Prices" 500 000 row
+
+[live demo](https://gatsby-5o5.pages.dev/cars/)
+
+
+[source code on github](https://github.com/vora-bei/gatsby-cdn-search-demo-site)
+
+
+[source of data](https://www.kaggle.com/tunguz/used-car-auction-prices)
 
 ### Plugins config
 ```javascript
@@ -221,15 +231,4 @@ const cursor = useCdnCursorQuery('cars', query, {year: 1}, 0, 30); // hook retur
       }
 ```
 
-### Live demo 
-    
-Kaggle dataset "Used Car Auction Prices" 500 000 row 
-
-[live demo](https://gatsby-5o5.pages.dev/cars/)
-
-
-[source code on github](https://github.com/vora-bei/gatsby-cdn-search-demo-site)
-  
-    
-[source of data](https://www.kaggle.com/tunguz/used-car-auction-prices)
 
