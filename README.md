@@ -4,8 +4,11 @@
 > Give us any feedback, open issues for any questions or ideas
 
 Mongo query compatible search plugin for gatsby.
+
 It is a no cost way to add search to your site.
+
 Key technology is http2 protocol, CDN, mongo-like query and N-GRAM search.
+
 The plugin supports mongo-like query syntax with custom n-gram search.
 
 Idea of this plugin is simple.
@@ -17,6 +20,7 @@ Idea of this plugin is simple.
 - http2 multiplexing multiple requests over a single TCP connection.
 
 The plugin has native support React via Hook "useCdnCursorQuery".
+
 Also, you can trace your request with log-level.
 ```javascript
 import { useCdnCursorQuery, log } from 'gatsby-cdn-search-plugin'
