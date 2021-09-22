@@ -1,6 +1,6 @@
 {
   "name": "gatsby-cdn-search-plugin",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "description": "Gatsby plugin for add static search to site by cdn indexes.",
   "browser": "index.js",
   "main": "index.js",
@@ -17,6 +17,7 @@
     "gatsby-plugin",
     "cdn",
     "search",
+    "static"
   ],
   "author": "voronsupermen@gmail.com",
   "license": "0BSD",
