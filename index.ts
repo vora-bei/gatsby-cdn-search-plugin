@@ -184,13 +184,13 @@ export const useCdnCursorStatefulQuery = <T extends never>(dbId: string, query: 
     const cursor = useMemo(() => cursorCreator((async () => {
         const db: Db = await $db;
         const cursor = db.cursor(query, sort, skip, limit);
-        cursor.next().catch((e) => {
-            log.error(e);
-        });
         return cursor;
     })()), [query, sort, skip, limit, dbId]);
 
     useEffect(() => {
+        cursor.next().catch((e) => {
+            log.error(e);
+        });
         return () => {
             (async () => {
                 if (cursor) {
@@ -204,6 +204,5 @@ export const useCdnCursorStatefulQuery = <T extends never>(dbId: string, query: 
         }
     }, [query, sort, skip, limit, dbId]);
 
-    return useMemo(() =>  ({...cursor, page, all, fetching, hasNext}),
-        [cursor, page, all, fetching, hasNext]);
+    return {...cursor, page, all, fetching, hasNext};
 }
