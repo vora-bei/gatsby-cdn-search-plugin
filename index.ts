@@ -1,16 +1,17 @@
 import {
-    TextLexIndice,
+    Db,
+    log,
     NgramIndice,
-    SimpleIndice,
     RangeLinearIndice,
     restoreSharedIndicesBrowser,
-    Db,
     Schema,
-    log,
+    SimpleIndice,
+    TextLexIndice,
 } from "cdn-static-database";
 import {useEffect, useMemo, useState} from "react";
 import {ISharedIndice} from "cdn-static-database/types/@types/indice";
-export { log } from "cdn-static-database";
+
+export {log} from "cdn-static-database";
 const baseUrl = '/cdn-indice/';
 export const restore = async (id: string, dbId: string) => {
     return restoreSharedIndicesBrowser<any, any>({
@@ -155,25 +156,18 @@ export const useCdnCursorStatefulQuery = <T extends never>(dbId: string, query: 
     fetching: boolean;
 } => {
     const $db = useMemo(() => (async () => await restoreDb(dbId))(), [dbId]);
-    const [page, setPage] = useState([]);
-    const [all, setAll] = useState([]);
-    const [fetching, setFetching] = useState(false);
-    const [hasNext, setHasNext] = useState(false);
+    const [state, setState] = useState({page: [], all: [], fetching: false, hasNext: false});
     const cursorCreator = ($cursor) => {
         let p: T[] = [];
         const a: T[] = [];
         return ({
             next: async () => {
-                setFetching(true);
-                setHasNext(false);
+                setState({...state, fetching: true, hasNext: false})
                 const c = await $cursor;
                 p = await c.next();
                 const h = await c.hasNext()
-                a.push(...page);
-                setPage(p);
-                setAll(a);
-                setHasNext(h);
-                setFetching(false);
+                a.push(...p);
+                setState({page: p, all: a, fetching: false, hasNext: h})
             },
             finish: async () => {
                 const c = await $cursor;
@@ -183,8 +177,7 @@ export const useCdnCursorStatefulQuery = <T extends never>(dbId: string, query: 
     }
     const cursor = useMemo(() => cursorCreator((async () => {
         const db: Db = await $db;
-        const cursor = db.cursor(query, sort, skip, limit);
-        return cursor;
+        return db.cursor(query, sort, skip, limit);
     })()), [query, sort, skip, limit, dbId]);
 
     useEffect(() => {
@@ -204,5 +197,5 @@ export const useCdnCursorStatefulQuery = <T extends never>(dbId: string, query: 
         }
     }, [query, sort, skip, limit, dbId]);
 
-    return {...cursor, page, all, fetching, hasNext};
+    return {...cursor, ...state};
 }
