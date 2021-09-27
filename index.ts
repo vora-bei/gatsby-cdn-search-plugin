@@ -5,13 +5,13 @@ import {
     RangeLinearIndice,
     restoreSharedIndicesBrowser,
     Db,
-    Schema
+    Schema,
+    log,
 } from "cdn-static-database";
-import { useEffect, useMemo } from "react";
+import {useEffect, useMemo, useState} from "react";
 import {ISharedIndice} from "cdn-static-database/types/@types/indice";
 
 const baseUrl = '/cdn-indice/';
-export {log} from "cdn-static-database";
 export const restore = async (id: string, dbId: string) => {
     return restoreSharedIndicesBrowser<any, any>({
         id,
@@ -20,15 +20,22 @@ export const restore = async (id: string, dbId: string) => {
         deserialize: NgramIndice.deserialize
     })
 }
+
 export enum Engine {
     "n-gram" = "n-gram",
     "simple" = "simple",
     "text-lex" = "text-lex"
 }
-export interface ISerializedIndice extends Record<string, unknown> { id: string, columns?: string[], column?: string, type?: Engine };
+
+export interface ISerializedIndice extends Record<string, unknown> {
+    id: string,
+    columns?: string[],
+    column?: string,
+    type?: Engine
+};
 
 export const getIndice = (indice: Partial<ISerializedIndice>) => {
-    const { type = "simple", column, columns, ...options } = indice;
+    const {type = "simple", column, columns, ...options} = indice;
     if (type === "n-gram") {
         return new NgramIndice(options);
     }
@@ -41,7 +48,7 @@ export const getIndice = (indice: Partial<ISerializedIndice>) => {
     throw new Error(`Engine ${type} not found`)
 }
 export const getLazyIndice = (indice: Partial<ISerializedIndice>) => {
-    const { type = "simple" } = indice;
+    const {type = "simple"} = indice;
     if (type === "n-gram") {
         return NgramIndice.deserialize;
     }
@@ -55,7 +62,7 @@ export const getLazyIndice = (indice: Partial<ISerializedIndice>) => {
 }
 
 const getIndicePath = (indice: ISerializedIndice) => {
-    const { type = "simple", column } = indice;
+    const {type = "simple", column} = indice;
     if (column && type === "simple") {
         return column;
     } else {
@@ -92,7 +99,7 @@ export const restoreDb = async (id: string) => {
             res.indices
                 .map(
                     indice =>
-                        ({ indice: indiceInstancesMap.get(indice.id)!, path: getIndicePath(indice) })
+                        ({indice: indiceInstancesMap.get(indice.id)!, path: getIndicePath(indice)})
                 )
         ));
 }
@@ -104,37 +111,99 @@ export const useCdnCursorQuery = <T extends never>(dbId: string, query: { [name:
 } => {
     const $db = useMemo(() => (async () => await restoreDb(dbId))(), [dbId]);
     const cursorCreator = ($cursor) => ({
-      next: async () => {
-        const c = await $cursor;
-        return await c.next();
-      },
-      hasNext: async () => {
-        const c = await $cursor;
-        return await c.hasNext();
-      },
-      finish: async () => {
-        const c = await $cursor;
-        c.finish();
-      }
+        next: async () => {
+            const c = await $cursor;
+            return await c.next();
+        },
+        hasNext: async () => {
+            const c = await $cursor;
+            return await c.hasNext();
+        },
+        finish: async () => {
+            const c = await $cursor;
+            c.finish();
+        }
     })
     const cursor = useMemo(() => cursorCreator((async () => {
-      const db: Db = await $db;
-      return  db.cursor(query, sort, skip, limit);
+        const db: Db = await $db;
+        return db.cursor(query, sort, skip, limit);
     })()), [query, sort, skip, limit, dbId]);
-  
+
     useEffect(() => {
-      return () => {
-        (async ()=>{
-          if (cursor) {
-            try {
-            await cursor.finish();
-            } catch (e) {
-              console.error(e);
-            }
-          }
-        })()
-      }
+        return () => {
+            (async () => {
+                if (cursor) {
+                    try {
+                        await cursor.finish();
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            })()
+        }
     }, [query, sort, skip, limit, dbId]);
-  
+
     return cursor;
-  }
+}
+export const useCdnCursorStatelessQuery = useCdnCursorQuery;
+export const useCdnCursorStatefulQuery = <T extends never>(dbId: string, query: { [name: string]: never }, sort: { [name: string]: never }, skip = 0, limit = 30): {
+    next: () => Promise<void>;
+    finish: () => Promise<void>;
+    hasNext: boolean;
+    page: T[];
+    all: T[];
+    fetching: boolean;
+} => {
+    const $db = useMemo(() => (async () => await restoreDb(dbId))(), [dbId]);
+    const [page, setPage] = useState([]);
+    const [all, setAll] = useState([]);
+    const [fetching, setFetching] = useState(false);
+    const [hasNext, setHasNext] = useState(false);
+    const cursorCreator = ($cursor) => {
+        let p: T[] = [];
+        const a: T[] = [];
+        return ({
+            next: async () => {
+                setFetching(true);
+                setHasNext(false);
+                const c = await $cursor;
+                p = await c.next();
+                const h = await c.hasNext()
+                a.push(...page);
+                setPage(p);
+                setAll(a);
+                setHasNext(h);
+                setFetching(false);
+            },
+            finish: async () => {
+                const c = await $cursor;
+                c.finish();
+            }
+        });
+    }
+    const cursor = useMemo(() => cursorCreator((async () => {
+        const db: Db = await $db;
+        return db.cursor(query, sort, skip, limit);
+    })()), [query, sort, skip, limit, dbId]);
+
+    useEffect(() => {
+        return () => {
+            (async () => {
+                if (cursor) {
+                    try {
+                        await cursor.finish();
+                    } catch (e) {
+                        log.error(e);
+                    }
+                }
+            })()
+        }
+    }, [query, sort, skip, limit, dbId]);
+
+    return useMemo(() => {
+        cursor.next().catch((e) => {
+            log.error(e);
+        });
+        return ({...cursor, page, all, fetching, hasNext})
+    }, [cursor, page, all, fetching, hasNext]);
+}

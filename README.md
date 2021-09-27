@@ -140,11 +140,71 @@ Kaggle dataset "Used Car Auction Prices" 500 000 row
 | id           | String   | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$lex:  "search"}                                                                   |
 | column       | String   | True     | None          | Indexing column                                                                                                                                                                |
 
-
-### Usage React hook
+### Usage stateful React hook
 ```javascript
-import { useCdnCursorQuery, log } from 'gatsby-cdn-search-plugin'
+import { useCdnCursorStatelessQuery, log } from 'gatsby-cdn-search-plugin'
 log.enableAll(); // full logging 
+
+
+const makeQuery = (search) => { // Different query strategy. It is depends of length search word
+  if (search.length >= 4) {
+    return { $ngram: search }; // n-gram 
+  } else if (!!search.length) {
+    return {
+      $or: [
+        { model: { $regex: new RegExp(`^${search}`, 'i'), }, }, // regexp by two columns
+        { make: { $regex: new RegExp(`^${search}`, 'i'), }, }
+      ],
+    };
+  } else {
+    return undefined;
+  }
+}
+const [state, dispatch] = useReducer(reducer, initialState);
+
+const query = useMemo(() => makeQuery(state.search), [state.search]);
+
+const {hasNext, next, fetching, all, page} = useCdnCursorStatefulQuery('cars', query, {year: 1}, 0, 30); // hook return cursor of data
+
+const load = useMemo(() => {
+    if (hasNext && !fetching) {
+          next(); // load next slice of data 
+    }}, [hasNext, fetching, next]);
+
+```
+
+
+### Usage stateless React hook (more complicated)
+```javascript
+import { useCdnCursorStatelessQuery, log } from 'gatsby-cdn-search-plugin'
+log.enableAll(); // full logging 
+
+const initialState = {
+    loading: false,
+    search: '',
+    list: [],
+    page: 0,
+};
+
+function reducer(state, action) {
+    switch (action.type) {
+        case 'pageUp':
+            return { ...state, page: state.page + 1 }
+        case 'type':
+            return { ...state, search: action.value }
+        case 'loading':
+            return { ...state, loading: true }
+        case 'load':
+            return { ...state, loading: false, list: action.list, page: 0 };
+        case 'indice':
+            return { ...state, indice: action.value }
+        case 'loadMore':
+            return { ...state, loading: false, list: [...state.list, ...action.list] };
+        default:
+            throw new Error();
+    }
+}
+
 const makeQuery = (search) => { // Different query strategy. It is depends of length search word
   if (search.length >= 4) {
     return { $ngram: search, year: { $lte: 2014 } }; // n-gram and  year <= 2014
