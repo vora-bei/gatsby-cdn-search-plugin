@@ -10,7 +10,7 @@ import {
 } from "cdn-static-database";
 import {useEffect, useMemo, useState} from "react";
 import {ISharedIndice} from "cdn-static-database/types/@types/indice";
-
+export { log } from "cdn-static-database";
 const baseUrl = '/cdn-indice/';
 export const restore = async (id: string, dbId: string) => {
     return restoreSharedIndicesBrowser<any, any>({
