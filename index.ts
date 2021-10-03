@@ -105,6 +105,103 @@ export const restoreDb = async (id: string) => {
         ));
 }
 
+export const useFullTextCursorStatelessQuery = <T extends never>(dbId: string, text: string, skip = 0, limit = 30): {
+    next: () => Promise<T[]>;
+    hasNext: () => Promise<boolean>;
+    finish: () => Promise<void>;
+} => {
+    const $db = useMemo(() => (async () => await restoreDb(dbId))(), [dbId]);
+    const cursorCreator = ($cursor) => ({
+        next: async () => {
+            const c = await $cursor;
+            return await c.next();
+        },
+        hasNext: async () => {
+            const c = await $cursor;
+            return await c.hasNext();
+        },
+        finish: async () => {
+            const c = await $cursor;
+            c.finish();
+        }
+    })
+    const cursor = useMemo(() => cursorCreator((async () => {
+        const db: Db = await $db;
+        return db.cursorText(text, skip, limit);
+    })()), [text, skip, limit, dbId]);
+
+    useEffect(() => {
+        return () => {
+            (async () => {
+                if (cursor) {
+                    try {
+                        await cursor.finish();
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            })()
+        }
+    }, [text, skip, limit, dbId]);
+
+    return cursor;
+}
+export const useFullTextCursorStateFullQuery = <T extends never>(dbId: string, text: string, skip = 0, limit = 30): {
+    next: () => Promise<void>;
+    finish: () => Promise<void>;
+    hasNext: boolean;
+    page: T[];
+    all: T[];
+    fetching: boolean;
+} => {
+    const $db = useMemo(() => (async () => await restoreDb(dbId))(), [dbId]);
+    const [state, setState] = useState({page: [], all: [], fetching: false, hasNext: false});
+    const cursorCreator = ($cursor) => {
+        let p: T[] = [];
+        const a: T[] = [];
+        return ({
+            next: async () => {
+                setState({...state, fetching: true, hasNext: false})
+                const c = await $cursor;
+                p = await c.next();
+                const h = await c.hasNext()
+                a.push(...p);
+                setState({page: p, all: a, fetching: false, hasNext: h})
+            },
+            finish: async () => {
+                const c = await $cursor;
+                c.finish();
+            }
+        });
+    }
+    const cursor = useMemo(() => cursorCreator((async () => {
+        const db: Db = await $db;
+        return db.cursorText(text, skip, limit);
+    })()), [text, skip, limit, dbId]);
+
+    useEffect(() => {
+        cursor.next().catch((e) => {
+            log.error(e);
+        });
+        return () => {
+            (async () => {
+                if (cursor) {
+                    try {
+                        await cursor.finish();
+                    } catch (e) {
+                        log.error(e);
+                    }
+                }
+            })()
+        }
+    }, [text, skip, limit, dbId]);
+
+    return {...cursor, ...state};
+}
+
+
+
+
 export const useCdnCursorQuery = <T extends never>(dbId: string, query: { [name: string]: never }, sort: { [name: string]: never }, skip = 0, limit = 30): {
     next: () => Promise<T[]>;
     hasNext: () => Promise<boolean>;
