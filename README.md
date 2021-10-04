@@ -7,7 +7,7 @@ Mongo query compatible search plugin for gatsby.
 
 It is a no cost way to add search to your site.
 
-Key technology is http2 protocol, CDN, mongo-like query and N-GRAM search.
+Key technology is http2/http3 protocols, CDN, mongo-like query and N-GRAM search.
 
 The plugin supports mongo-like query syntax with custom n-gram search.
 
