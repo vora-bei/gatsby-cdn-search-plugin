@@ -163,9 +163,13 @@ export const useFullTextCursorStateFullQuery = <T extends never>(dbId: string, t
             next: async () => {
                 setState({...state, fetching: true, hasNext: false})
                 const c = await $cursor;
-                p = await c.next();
+                try {
+                    p = await c.next();
+                    a.push(...p);
+                } catch (e){
+
+                }
                 const h = await c.hasNext()
-                a.push(...p);
                 setState({page: p, all: a, fetching: false, hasNext: h})
             },
             finish: async () => {
@@ -261,9 +265,13 @@ export const useCdnCursorStatefulQuery = <T extends never>(dbId: string, query: 
             next: async () => {
                 setState({...state, fetching: true, hasNext: false})
                 const c = await $cursor;
-                p = await c.next();
+                try {
+                    p = await c.next();
+                    a.push(...p);
+                } catch (e){
+                    log.trace(e);
+                }
                 const h = await c.hasNext()
-                a.push(...p);
                 setState({page: p, all: a, fetching: false, hasNext: h})
             },
             finish: async () => {
