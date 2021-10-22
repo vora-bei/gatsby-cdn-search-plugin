@@ -37,6 +37,7 @@ exports.pluginOptionsSchema = ({ Joi }) => {
       column: Joi.string(),
       columns: Joi.array().items(Joi.string()),
       type: Joi.string(),
+      stem: Joi.string(),
       actuationLimit: Joi.number(),
       actuationLimitAuto: Joi.boolean(),
       gramLen: Joi.number(),

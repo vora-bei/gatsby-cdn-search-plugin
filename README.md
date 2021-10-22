@@ -101,50 +101,73 @@ Kaggle dataset "Used Car Auction Prices" 500 000 row
     }
     ]
 ```
-### Plugin options
-| Options name  | Type                                                                      | Required | Default value | Description                                                                                                                        |
-|---------------|---------------------------------------------------------------------------|----------|---------------|------------------------------------------------------------------------------------------------------------------------------------|
-| id            | String                                                                    | True     | None          | Unique id database collection. The first parameter in React Hook useCdnCursorQuery.                                                |
-| chunkSize     | Number                                                                    | False    | 500           | Indices chunk size. This affects the number of indices files. You should select this parameters depends of size of your collection |
-| dataChunkSize | Number                                                                    | False    | 25            | Data chunk size. This affects the number of data files.                                                                            |
-| idAttr        | String                                                                    | True     | None          | Primary id attribute name.                                                                                                         |
-| normalizer    | Function({data: any}): Row[]                                              | True     | None          | It is callback for handle data from graphQl                                                                                        |
-| graphQL       | graphQL string                                                            | True     | None          | Graphql query for fetching data                                                                                                    |
-| indices       | Array<Union<NgramIndicesOption ,TextLexIndicesOption ,SimpleIndicesOption>> | True     | None          | Secondary indices. Add column available to search.                                                                                 |
-
-### NgramIndicesOption
-| Options name       | Type     | Required | Default value | Description                                                                                                                                                                                                          |
-|--------------------|----------|----------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| type               | "n-gram" | True     | simple        | Indices using the N-Gram algorithm for search with typos.  Also, support "The Porter Stemming Algorithm" for zipping indices.  You can search by this column with specific not Mongo predicate.  {$ngram:  "search"} |
-| id                 | String   | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$ngram:  "search"}                                                                                                       |
-| actuationLimit     | Number   | True     | None          | Minimum match n-gram in search.  [color] -> [col, olo, lor]                                                                                                                                                          |
-| actuationLimitAuto | Boolean  | False    | False         | If option equal true option actuationLimit doesn't work.  Actuation limit n-gram calculates auto by the size of the search word.                                                                                     |
-| gramLen: 3         | Number   | False    | 3             | Size of. Example if n-gram equal 3 "color" was split to "col", "olo", "lor"                                                                                                                                          |
-| toLowcase          | Boolean  | False    | False         | Case sensitive search                                                                                                                                                                                                |
-| stem               | String   | False    | None          |  Preprocess indices with "The Porter Stemming Algorithm".  Available values 'english', 'russian', ...                                                                                                                |
-| columns            | String[] | True     | None          | Indexing columns                                                                                                                                                                                                     |
-| stopWords          | String[] | False    | None          | The words exclude for search                                                                                                                                                                                         |
-
-### SimpleIndicesOption
-| Options name | Type       | Required | Default value | Description                                                                                                           |
-|--------------|------------|----------|---------------|-----------------------------------------------------------------------------------------------------------------------|
-| type         | "text-lex" | True     | simple        | The Porter Stemming Algorithm.    You can search by this column with specific not Mongo predicate.  {$lex:  "search"} |
-| id           | String     | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$lex:  "search"}          |
-| algoritm     | String     | False    | None          |  Preprocess indices with "The Porter Stemming Algorithm".  Available values 'english', 'russian', ...                 |
-| column       | String     | True     | None          | Indexing column                                                                                                       |
-
-### TextLexIndicesOption
-| Options name | Type     | Required | Default value | Description                                                                                                                                                                    |
-|--------------|----------|----------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| type         | "simple" | True     | "simple"      | Default value simple indices by one column only. You can search by this column with regular Mongo predicate  lt, gt, eq, ... etc. Also, support regexp by "start with regexp"  |
-| id           | String   | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$lex:  "search"}                                                                   |
-| column       | String   | True     | None          | Indexing column                                                                                                                                                                |
 
 
-### Usage React hook
+### Usage stateful React hook
 ```javascript
-import { useCdnCursorQuery, log } from 'gatsby-cdn-search-plugin'
+import { useCdnCursorStatelessQuery, log } from 'gatsby-cdn-search-plugin'
 log.enableAll(); // full logging 
+
+
+const makeQuery = (search) => { // Different query strategy. It is depends of length search word
+  if (search.length >= 4) {
+    return { $ngram: search }; // n-gram 
+  } else if (!!search.length) {
+    return {
+      $or: [
+        { model: { $regex: new RegExp(`^${search}`, 'i'), }, }, // regexp by two columns
+        { make: { $regex: new RegExp(`^${search}`, 'i'), }, }
+      ],
+    };
+  } else {
+    return undefined;
+  }
+}
+const [state, dispatch] = useReducer(reducer, initialState);
+
+const query = useMemo(() => makeQuery(state.search), [state.search]);
+
+const {hasNext, next, fetching, all, page} = useCdnCursorStatefulQuery('cars', query, {year: 1}, 0, 30); // hook return cursor of data
+
+const load = useMemo(() => {
+    if (hasNext && !fetching) {
+          next(); // load next slice of data 
+    }}, [hasNext, fetching, next]);
+
+```
+
+
+### Usage stateless React hook (more complicated)
+```javascript
+import { useCdnCursorStatelessQuery, log } from 'gatsby-cdn-search-plugin'
+log.enableAll(); // full logging 
+
+const initialState = {
+    loading: false,
+    search: '',
+    list: [],
+    page: 0,
+};
+
+function reducer(state, action) {
+    switch (action.type) {
+        case 'pageUp':
+            return { ...state, page: state.page + 1 }
+        case 'type':
+            return { ...state, search: action.value }
+        case 'loading':
+            return { ...state, loading: true }
+        case 'load':
+            return { ...state, loading: false, list: action.list, page: 0 };
+        case 'indice':
+            return { ...state, indice: action.value }
+        case 'loadMore':
+            return { ...state, loading: false, list: [...state.list, ...action.list] };
+        default:
+            throw new Error();
+    }
+}
+
 const makeQuery = (search) => { // Different query strategy. It is depends of length search word
   if (search.length >= 4) {
     return { $ngram: search, year: { $lte: 2014 } }; // n-gram and  year <= 2014
@@ -231,4 +254,42 @@ const cursor = useCdnCursorQuery('cars', query, {year: 1}, 0, 30); // hook retur
       }
 ```
 
+### Plugin options
+| Options name  | Type                                                                      | Required | Default value | Description                                                                                                                        |
+|---------------|---------------------------------------------------------------------------|----------|---------------|------------------------------------------------------------------------------------------------------------------------------------|
+| id            | String                                                                    | True     | None          | Unique id database collection. The first parameter in React Hook useCdnCursorQuery.                                                |
+| chunkSize     | Number                                                                    | False    | 500           | Indices chunk size. This affects the number of indices files. You should select this parameters depends of size of your collection |
+| dataChunkSize | Number                                                                    | False    | 25            | Data chunk size. This affects the number of data files.                                                                            |
+| idAttr        | String                                                                    | True     | None          | Primary id attribute name.                                                                                                         |
+| normalizer    | Function({data: any}): Row[]                                              | True     | None          | It is callback for handle data from graphQl                                                                                        |
+| graphQL       | graphQL string                                                            | True     | None          | Graphql query for fetching data                                                                                                    |
+| indices       | Array<Union<NgramIndicesOption ,TextLexIndicesOption ,SimpleIndicesOption>> | True     | None          | Secondary indices. Add column available to search.                                                                                 |
+
+### NgramIndicesOption
+| Options name       | Type     | Required | Default value | Description                                                                                                                                                                                                          |
+|--------------------|----------|----------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| type               | "n-gram" | True     | simple        | Indices using the N-Gram algorithm for search with typos.  Also, support "The Porter Stemming Algorithm" for zipping indices.  You can search by this column with specific not Mongo predicate.  {$ngram:  "search"} |
+| id                 | String   | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$ngram:  "search"}                                                                                                       |
+| actuationLimit     | Number   | True     | None          | Minimum match n-gram in search.  [color] -> [col, olo, lor]                                                                                                                                                          |
+| actuationLimitAuto | Boolean  | False    | False         | If option equal true option actuationLimit doesn't work.  Actuation limit n-gram calculates auto by the size of the search word.                                                                                     |
+| gramLen: 3         | Number   | False    | 3             | Size of. Example if n-gram equal 3 "color" was split to "col", "olo", "lor"                                                                                                                                          |
+| toLowcase          | Boolean  | False    | False         | Case sensitive search                                                                                                                                                                                                |
+| stem               | String   | False    | None          |  Preprocess indices with "The Porter Stemming Algorithm".  Available values 'english', 'russian', ...                                                                                                                |
+| columns            | String[] | True     | None          | Indexing columns                                                                                                                                                                                                     |
+| stopWords          | String[] | False    | None          | The words exclude for search                                                                                                                                                                                         |
+
+### SimpleIndicesOption
+| Options name | Type       | Required | Default value | Description                                                                                                           |
+|--------------|------------|----------|---------------|-----------------------------------------------------------------------------------------------------------------------|
+| type         | "text-lex" | True     | simple        | The Porter Stemming Algorithm.    You can search by this column with specific not Mongo predicate.  {$lex:  "search"} |
+| id           | String     | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$lex:  "search"}          |
+| algoritm     | String     | False    | None          |  Preprocess indices with "The Porter Stemming Algorithm".  Available values 'english', 'russian', ...                 |
+| column       | String     | True     | None          | Indexing column                                                                                                       |
+
+### TextLexIndicesOption
+| Options name | Type     | Required | Default value | Description                                                                                                                                                                    |
+|--------------|----------|----------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| type         | "simple" | True     | "simple"      | Default value simple indices by one column only. You can search by this column with regular Mongo predicate  lt, gt, eq, ... etc. Also, support regexp by "start with regexp"  |
+| id           | String   | True     | None          | Unique id of indices. Uses as operator name in the search. Query example for id "ngram" is {$lex:  "search"}                                                                   |
+| column       | String   | True     | None          | Indexing column                                                                                                                                                                |
 
